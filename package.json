@@ -1,0 +1,28 @@
+{
+  "name": "github-api-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "client": "cd client/client && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/auth-token": "^2.5.0",
+    "@octokit/core": "^3.5.1",
+    "@octokit/rest": "^18.12.0",
+    "concurrently": "^6.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "logger": "^0.0.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.15",
+    "octokit": "^1.7.0"
+  }
+}
