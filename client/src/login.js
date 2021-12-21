@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./App.css";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 import Button from "@mui/material/Button";
-import { InputLabel, Input, FormControl, FormHelperText } from "@mui/material";
+import {
+  InputLabel,
+  Input,
+  FormControl,
+  FormHelperText,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 
 function Login() {
   const [token, setToken] = useState(null);
   const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+  const [open, setOpen] = useState(false);
 
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -23,11 +44,13 @@ function Login() {
       .then((poo) => {
         console.log(poo.data.login);
       })
-      .catch((error) => {
-        console.error("Invalid Login", error);
+      .catch((err) => {
+        setError(true);
+        console.error("Invalid Login", err);
       });
     //console.log(data);
     console.log("The name you entered was:" + token);
+    console.log(error);
   };
 
   /**/
@@ -45,10 +68,34 @@ function Login() {
         <FormHelperText id="my-helper-text">
           This token can be generated on Github.com
         </FormHelperText>
-        <Button type="submit" onClick={() => console.log("clicked")}>
-          Submit
-        </Button>
+
+        <Link to="/dashboard">
+          <Button type="submit" onClick={handleClick}>
+            Submit
+          </Button>
+        </Link>
       </form>
+      <div>
+        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+          {!error ? (
+            <Alert
+              onClose={handleClose}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              You have successfully logged in!{" "}
+            </Alert>
+          ) : (
+            <Alert
+              onClose={handleClose}
+              severity="error"
+              sx={{ width: "100%" }}
+            >
+              Error Occurred{" "}
+            </Alert>
+          )}
+        </Snackbar>
+      </div>
     </div>
   );
 }

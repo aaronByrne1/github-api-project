@@ -31,7 +31,7 @@ app.post("/api/login", (req, res) => {
     auth: token,
   });
   getLogin().then((loginInfo) => res.json(loginInfo));
-  console.log(token);
+  console.log(token + " Success!");
 });
 
 async function getLogin() {
