@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 
 function Login() {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState();
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
@@ -42,7 +42,7 @@ function Login() {
     })
       .then((response) => response.json())
       .then((poo) => {
-        console.log(poo.data.login);
+        console.log(poo.data.login + "big poo");
       })
       .catch((err) => {
         setError(true);
@@ -69,11 +69,9 @@ function Login() {
           This token can be generated on Github.com
         </FormHelperText>
 
-        <Link to="/dashboard">
-          <Button type="submit" onClick={handleClick}>
-            Submit
-          </Button>
-        </Link>
+        <Button type="submit" onClick={handleClick}>
+          Submit
+        </Button>
       </form>
       <div>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
@@ -91,7 +89,7 @@ function Login() {
               severity="error"
               sx={{ width: "100%" }}
             >
-              Error Occurred{" "}
+              Error Occurred Invalid Personal Access Token.{" "}
             </Alert>
           )}
         </Snackbar>
