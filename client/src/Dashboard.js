@@ -13,6 +13,29 @@ import {
   Alert,
 } from "@mui/material";
 function Dashboard() {
-  return;
+  const [subscriberData, setSubscriberData] = useState(null);
+
+  useEffect(() => {
+    fetch("api/getSubscriberData", {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setSubscriberData(data);
+        console.log(data);
+      })
+      .catch((err) => {
+        console.error("Invalid Login", err);
+      });
+  }, []);
+  return (
+    <div>
+      <h1> Test</h1>
+      <Link to="/">Back</Link>{" "}
+    </div>
+  );
 }
 export default Dashboard;

@@ -16,7 +16,9 @@
 .background {
   background-color: brown;
 }
-
+.Welcome {
+  padding-right: 50px;
+}
 .Token {
   width: 100%;
   height: 100%;

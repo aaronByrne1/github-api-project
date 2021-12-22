@@ -24,6 +24,7 @@ app.listen(PORT, () => {
   auth: ``,
 });*/
 var octokit = null;
+var username = null;
 
 app.post("/api/login", (req, res) => {
   var token = req.body.token;
@@ -32,6 +33,16 @@ app.post("/api/login", (req, res) => {
   });
 
   getLogin().then((loginInfo) => res.json(loginInfo));
+});
+
+app.post("/api/pickUser", (req, res) => {
+  username = req.body.inputName;
+  console.log(username);
+});
+
+app.get("/api/getSubscriberData", (req, res) => {
+  console.log(username);
+  getFollowersList().then((data) => res.json(data));
 });
 
 async function getLogin() {
@@ -63,10 +74,13 @@ if (octokit != null) {
 // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
 async function getFollowersList() {
-  const login = await octokit.rest.users.getAuthenticated();
+  console.log(username);
+  //const login = await octokit.rest.users.getAuthenticated();
   const data = await octokit.request("GET /users/{username}/followers", {
-    username: login.data.login,
+    username: username,
   });
+  var followerAmount = data.data.length;
+
   return new Promise(function (resolve, reject) {
     resolve(data);
     reject(error);

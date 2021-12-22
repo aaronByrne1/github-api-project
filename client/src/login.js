@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./App.css";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import Button from "@mui/material/Button";
 import {
@@ -14,13 +20,20 @@ import {
 } from "@mui/material";
 
 function Login() {
-  const [token, setToken] = useState();
-  const [data, setData] = useState(null);
+  const [token, setToken] = useState(null);
+  const [username, setUsername] = useState(null);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [inputName, setInputName] = useState(null);
+  let navigate = useNavigate();
 
   const handleClick = () => {
     setOpen(true);
+  };
+
+  const newPage = () => {
+    //navigate("/dashboard", { replace: true });
   };
 
   const handleClose = (event, reason) => {
@@ -42,7 +55,9 @@ function Login() {
     })
       .then((response) => response.json())
       .then((poo) => {
-        console.log(poo.data.login + "big poo");
+        setLoggedIn(true);
+        setUsername(poo.data.login);
+        console.log(poo.data);
       })
       .catch((err) => {
         setError(true);
@@ -53,26 +68,63 @@ function Login() {
     console.log(error);
   };
 
-  /**/
+  const pickUser = (event) => {
+    event.preventDefault();
+
+    fetch("api/pickUser", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputName: inputName }),
+    })
+      .then((response) => response.json())
+      .then((poo) => {})
+
+      .catch((err) => {
+        setError(true);
+        console.error("Invalid Username", err);
+      });
+    navigate("/dashboard", { replace: true });
+  };
 
   return (
     <div className="Token">
-      <form onSubmit={handleSubmit}>
-        <InputLabel htmlFor="my-input">Personal Access Token</InputLabel>
-        <Input
-          id="my-input"
-          aria-describedby="my-helper-text"
-          value={token}
-          onInput={(event) => setToken(event.target.value)}
-        />
-        <FormHelperText id="my-helper-text">
-          This token can be generated on Github.com
-        </FormHelperText>
+      {!loggedIn ? (
+        <form onSubmit={handleSubmit}>
+          <InputLabel htmlFor="my-input">Personal Access Token</InputLabel>
+          <Input
+            id="my-input"
+            aria-describedby="my-helper-text"
+            value={token}
+            onInput={(event) => setToken(event.target.value)}
+          />
+          <FormHelperText id="my-helper-text">
+            This token can be generated on Github.com
+          </FormHelperText>
 
-        <Button type="submit" onClick={handleClick}>
-          Submit
-        </Button>
-      </form>
+          <Button type="submit" onClick={handleClick}>
+            Submit
+          </Button>
+        </form>
+      ) : (
+        <>
+          <h3 className="Welcome">Welcome {username}!</h3>
+          <form onSubmit={pickUser}>
+            <InputLabel htmlFor="my-input">Enter a Username</InputLabel>
+            <Input
+              id="my-input"
+              aria-describedby="my-helper-text"
+              value={inputName}
+              onInput={(event) => setInputName(event.target.value)}
+            />
+            <FormHelperText id="my-helper-text"></FormHelperText>
+            <Button type="submit" onClick={newPage}>
+              Submit
+            </Button>
+          </form>
+        </>
+      )}
       <div>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           {!error ? (
