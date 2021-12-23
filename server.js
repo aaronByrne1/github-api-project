@@ -25,7 +25,6 @@ app.listen(PORT, () => {
 });*/
 var octokit = null;
 var username = null;
-
 app.post("/api/login", (req, res) => {
   var token = req.body.token;
   octokit = new Octokit({
@@ -37,11 +36,9 @@ app.post("/api/login", (req, res) => {
 
 app.post("/api/pickUser", (req, res) => {
   username = req.body.inputName;
-  console.log(username);
 });
 
 app.get("/api/getSubscriberData", (req, res) => {
-  console.log(username);
   getFollowersList().then((data) => res.json(data));
 });
 
@@ -54,9 +51,9 @@ async function getLogin() {
   });
 }
 
-async function getUserInfo() {
+async function getUserInfo(login) {
   const data = await octokit.request("GET /users/{username}", {
-    username: "aaronbyrne1",
+    username: login,
   });
   return new Promise(function (resolve, reject) {
     resolve(data);
@@ -74,15 +71,39 @@ if (octokit != null) {
 // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
 async function getFollowersList() {
-  console.log(username);
-  //const login = await octokit.rest.users.getAuthenticated();
-  const data = await octokit.request("GET /users/{username}/followers", {
+  const tempData = await octokit.request("GET /users/{username}/followers", {
     username: username,
   });
-  var followerAmount = data.data.length;
+  var followerAmount = tempData.data.length;
+  var followersArray = [];
+  console.log(followerAmount);
+  for (var i = 0; i < followerAmount; i++) {
+    const data = await octokit.request("GET /users/{username}", {
+      username: tempData.data[i].login,
+    });
+    var returnedData = {};
+    returnedData.login = data.data.login;
+    returnedData.followers = data.data.followers;
+
+    followersArray.push(returnedData);
+  }
+  console.log(JSON.stringify(followersArray));
+  return new Promise(function (resolve, reject) {
+    resolve(followersArray);
+    reject(error);
+  });
+}
+
+async function getFollowersJson(login) {
+  const data = await octokit.request("GET /users/{username}", {
+    username: login,
+  });
+  var returnedData = {};
+  returnedData.login = data.data.login;
+  returnedData.followers = data.data.followers;
 
   return new Promise(function (resolve, reject) {
-    resolve(data);
+    resolve(returnedData);
     reject(error);
   });
 }

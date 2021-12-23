@@ -25,7 +25,7 @@ function Dashboard() {
       .then((response) => response.json())
       .then((data) => {
         setSubscriberData(data);
-        console.log(data);
+        console.log(data[5].login);
       })
       .catch((err) => {
         console.error("Invalid Login", err);
