@@ -76,20 +76,22 @@ async function getFollowersList() {
   });
   var followerAmount = tempData.data.length;
   var followersArray = [];
+  var loginArray = [];
+  var returnedData = {};
+
   console.log(followerAmount);
   for (var i = 0; i < followerAmount; i++) {
     const data = await octokit.request("GET /users/{username}", {
       username: tempData.data[i].login,
     });
-    var returnedData = {};
-    returnedData.login = data.data.login;
-    returnedData.followers = data.data.followers;
-
-    followersArray.push(returnedData);
+    loginArray.push(data.data.login);
+    followersArray.push(data.data.followers);
   }
+  returnedData.login = loginArray;
+  returnedData.followers = followersArray;
   console.log(JSON.stringify(followersArray));
   return new Promise(function (resolve, reject) {
-    resolve(followersArray);
+    resolve(returnedData);
     reject(error);
   });
 }

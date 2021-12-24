@@ -103,11 +103,7 @@ function Login() {
             This token can be generated on Github.com
           </FormHelperText>
 
-          <Button
-            className="stonlyHTTPS://"
-            type="submit"
-            onClick={handleClick}
-          >
+          <Button type="submit" onClick={handleClick}>
             Submit
           </Button>
         </form>
