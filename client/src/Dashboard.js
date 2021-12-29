@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./App.css";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import SearchAppBar from "./SearchAppBar";
+
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -25,12 +33,17 @@ import {
   FormHelperText,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
-function Dashboard(props) {
+function Dashboard() {
   const [followerData, setFollowerData] = useState([]);
   const [loginData, setLoginData] = useState([]);
   const [displayPie, setDisplayPie] = useState(true);
-  const { state } = this.props.location;
+  const [error, setError] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const { state } = useLocation();
+  const [searchBarName, setSearchBarName] = useState(null);
+  const [inputName, setInputName] = useState(null);
 
   const handleClick = () => {
     if (displayPie) {
@@ -40,22 +53,32 @@ function Dashboard(props) {
     }
   };
 
-  useEffect(() => {
-    fetch("api/getSubscriberData", {
-      method: "GET", // or 'PUT'
+  /*const pickUser = (event) => {
+    event.preventDefault();
+
+    fetch("api/pickUser", {
+      method: "POST", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({ inputName: inputName }),
     })
       .then((response) => response.json())
-      .then((data) => {
-        setFollowerData(data.followers);
-        setLoginData(data.login);
-      })
+      .then((poo) => {})
+
       .catch((err) => {
-        console.error("Invalid Login", err);
+        setError(true);
+        console.error("Invalid Username", err);
       });
-  }, []);
+
+    console.log(inputName);
+    console.log(update);
+  };*/
+
+  useEffect(() => {
+    parentToChild();
+  }, []); //update
+
   const options = {
     responsive: true,
     plugins: {
@@ -68,6 +91,51 @@ function Dashboard(props) {
       },
     },
   };
+
+  const parentToChild = () => {
+    setSearchBarName(state);
+  };
+
+  const childToParent = (returnedUserInput) => {
+    setInputName(returnedUserInput);
+    setLoginData([]);
+    getSubscribeData(returnedUserInput);
+    /*fetch("/api/pickUser", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputName: inputName }),
+    })
+      .then((response) => response.json())
+      .then(() => {
+        getSubscribeData();
+      })
+
+      .catch((err) => {
+        setError(true);
+        console.error("Invalid Username", err);
+      });*/
+  };
+  const getSubscribeData = (returnedUserInput) => {
+    console.log(inputName);
+    fetch("api/getSubscriberData", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputName: returnedUserInput }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setFollowerData(data.followers);
+        setLoginData(data.login);
+      })
+      .catch((err) => {
+        console.error("Invalid Login", err);
+      });
+  };
+
   const dataForGraph = {
     labels: loginData,
     datasets: [
@@ -113,28 +181,73 @@ function Dashboard(props) {
   };
 
   return (
-    <div>
-      <Link to="/">Back</Link>
-      <Button type="submit" onClick={handleClick}>
-        Change Graph
-      </Button>
-      <h4>
-        {" "}
-        {state} has {loginData.length} followers. These are the amount of
-        followers your followers have.
-      </h4>
-      {displayPie ? (
-        <div>
-          <Pie
-            data={data}
-            width={750}
-            height={750}
-            options={{ maintainAspectRatio: false }}
-          />
+    <div className="dashboard">
+      <SearchAppBar
+        parentToChild={searchBarName}
+        childToParent={childToParent}
+      ></SearchAppBar>
+      {/*<Link to="/" style={{ color: "black" }}>
+        Back
+  </Link>*/}
+      {loginData.length === 0 ? (
+        <div className="loading">
+          <CircularProgress color="grey" />
         </div>
       ) : (
         <div>
-          <Bar options={options} width={200} height={50} data={dataForGraph} />
+          {/*<div className="inputBar">
+            <form onSubmit={pickUser}>
+              <InputLabel htmlFor="my-input">Enter a Username</InputLabel>
+              <Input
+                id="my-input"
+                aria-describedby="my-helper-text"
+                value={inputName}
+                onInput={(event) => setInputName(event.target.value)}
+              />
+              <FormHelperText id="my-helper-text"></FormHelperText>
+              <Button
+                type="submit"
+                onClick={() => {
+                  if (!update) {
+                    setUpdate(true);
+                  } else {
+                    setUpdate(false);
+                  }
+                }}
+              >
+                Submit
+              </Button>
+            </form>
+          </div>*/}
+          <div className="changeGraph">
+            <Button variant="contained" type="submit" onClick={handleClick}>
+              Change Graph
+            </Button>
+          </div>
+          <h4 style={{ color: "charcoal" }}>
+            {" "}
+            {inputName} has {loginData.length} followers. These are the amount
+            of followers your followers have.
+          </h4>
+          {displayPie ? (
+            <div>
+              <Pie
+                data={data}
+                width={750}
+                height={750}
+                options={{ maintainAspectRatio: false, borderColor: "black" }}
+              />
+            </div>
+          ) : (
+            <div>
+              <Bar
+                options={options}
+                width={200}
+                height={50}
+                data={dataForGraph}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

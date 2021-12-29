@@ -5,7 +5,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const logger = require("morgan");
-const { Octokit, App } = require("octokit");
+const { Octokit } = require("octokit");
 
 const PORT = process.env.PORT || 3001;
 
@@ -38,7 +38,9 @@ app.post("/api/pickUser", (req, res) => {
   username = req.body.inputName;
 });
 
-app.get("/api/getSubscriberData", (req, res) => {
+app.post("/api/getSubscriberData", (req, res) => {
+  username = req.body.inputName;
+  console.log(username);
   getFollowersList().then((data) => res.json(data));
 });
 
@@ -71,10 +73,11 @@ if (octokit != null) {
 // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
 async function getFollowersList() {
-  const tempData = await octokit.request("GET /users/{username}/followers", {
+  const tempData = await octokit.paginate("GET /users/{username}/followers", {
     username: username,
   });
-  var followerAmount = tempData.data.length;
+  console.log(tempData);
+  var followerAmount = tempData.length;
   var followersArray = [];
   var loginArray = [];
   var returnedData = {};
@@ -82,7 +85,7 @@ async function getFollowersList() {
   console.log(followerAmount);
   for (var i = 0; i < followerAmount; i++) {
     const data = await octokit.request("GET /users/{username}", {
-      username: tempData.data[i].login,
+      username: tempData[i].login,
     });
     loginArray.push(data.data.login);
     followersArray.push(data.data.followers);

@@ -32,10 +32,6 @@ function Login() {
     setOpen(true);
   };
 
-  const newPage = () => {
-    //navigate("/dashboard", { replace: true });
-  };
-
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -55,9 +51,9 @@ function Login() {
     })
       .then((response) => response.json())
       .then((poo) => {
-        setLoggedIn(true);
         setUsername(poo.data.login);
-        console.log(poo.data);
+        console.log(username);
+        setLoggedIn(true);
       })
       .catch((err) => {
         setError(true);
@@ -67,7 +63,9 @@ function Login() {
     console.log("The name you entered was:" + token);
     console.log(error);
   };
-
+  if (loggedIn) {
+    navigate("/dashboard", { replace: true, state: username });
+  }
   const pickUser = (event) => {
     event.preventDefault();
 
@@ -85,7 +83,7 @@ function Login() {
         setError(true);
         console.error("Invalid Username", err);
       });
-    navigate("/dashboard", { replace: true });
+    navigate("/dashboard", { replace: true, state: inputName });
   };
 
   return (
@@ -119,9 +117,7 @@ function Login() {
               onInput={(event) => setInputName(event.target.value)}
             />
             <FormHelperText id="my-helper-text"></FormHelperText>
-            <Button type="submit" onClick={newPage}>
-              Submit
-            </Button>
+            <Button type="submit">Submit</Button>
           </form>
         </>
       )}
