@@ -27,11 +27,14 @@ var octokit = null;
 var username = null;
 app.post("/api/login", (req, res) => {
   var token = req.body.token;
+  console.log(token);
   octokit = new Octokit({
     auth: token,
   });
 
-  getLogin().then((loginInfo) => res.json(loginInfo));
+  getLogin()
+    .then((loginInfo) => res.json(loginInfo))
+    .catch((err) => res.status(404).json(err)); //console.log(err)); //res.json(err));
 });
 
 app.post("/api/pickUser", (req, res) => {
@@ -40,8 +43,8 @@ app.post("/api/pickUser", (req, res) => {
 
 app.post("/api/getSubscriberData", (req, res) => {
   username = req.body.inputName;
-  console.log(username);
   getFollowersList().then((data) => res.json(data));
+  //.catch((err) => res.status(404).json(err));
 });
 
 async function getLogin() {
@@ -53,9 +56,9 @@ async function getLogin() {
   });
 }
 
-async function getUserInfo(login) {
+async function getUserInfo() {
   const data = await octokit.request("GET /users/{username}", {
-    username: login,
+    username: username,
   });
   return new Promise(function (resolve, reject) {
     resolve(data);
@@ -73,10 +76,14 @@ if (octokit != null) {
 // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
 async function getFollowersList() {
+  const avatarData = await octokit.request("GET /users/{username}", {
+    username: username,
+  });
+
+  var avatarURL = avatarData.data.avatar_url;
   const tempData = await octokit.paginate("GET /users/{username}/followers", {
     username: username,
   });
-  console.log(tempData);
   var followerAmount = tempData.length;
   var followersArray = [];
   var loginArray = [];
@@ -92,7 +99,8 @@ async function getFollowersList() {
   }
   returnedData.login = loginArray;
   returnedData.followers = followersArray;
-  console.log(JSON.stringify(followersArray));
+  returnedData.avatar = avatarURL;
+  console.log(returnedData.avatar);
   return new Promise(function (resolve, reject) {
     resolve(returnedData);
     reject(error);

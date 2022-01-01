@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
 import "./App.css";
 import SearchAppBar from "./SearchAppBar";
 
@@ -26,21 +25,14 @@ import { Bar } from "react-chartjs-2";
 import { Pie } from "react-chartjs-2";
 
 import Button from "@mui/material/Button";
-import {
-  InputLabel,
-  Input,
-  FormControl,
-  FormHelperText,
-  Snackbar,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
+import { Avatar, CircularProgress } from "@mui/material";
 function Dashboard() {
   const [followerData, setFollowerData] = useState([]);
   const [loginData, setLoginData] = useState([]);
   const [displayPie, setDisplayPie] = useState(true);
+  const [avatarURL, setAvatarURL] = useState(null);
   const [error, setError] = useState(false);
-  const [update, setUpdate] = useState(false);
+  const [enteredName, setEnteredName] = useState(false);
   const { state } = useLocation();
   const [searchBarName, setSearchBarName] = useState(null);
   const [inputName, setInputName] = useState(null);
@@ -100,25 +92,10 @@ function Dashboard() {
     setInputName(returnedUserInput);
     setLoginData([]);
     getSubscribeData(returnedUserInput);
-    /*fetch("/api/pickUser", {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ inputName: inputName }),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        getSubscribeData();
-      })
-
-      .catch((err) => {
-        setError(true);
-        console.error("Invalid Username", err);
-      });*/
+    setEnteredName(true);
   };
+
   const getSubscribeData = (returnedUserInput) => {
-    console.log(inputName);
     fetch("api/getSubscriberData", {
       method: "POST", // or 'PUT'
       headers: {
@@ -130,6 +107,8 @@ function Dashboard() {
       .then((data) => {
         setFollowerData(data.followers);
         setLoginData(data.login);
+        setAvatarURL(data.avatar);
+        console.log(data.avatar);
       })
       .catch((err) => {
         console.error("Invalid Login", err);
@@ -179,23 +158,35 @@ function Dashboard() {
       },
     ],
   };
-
+  if (avatarURL != null) {
+    console.log(avatarURL);
+  }
   return (
     <div className="dashboard">
       <SearchAppBar
         parentToChild={searchBarName}
         childToParent={childToParent}
       ></SearchAppBar>
+
       {/*<Link to="/" style={{ color: "black" }}>
         Back
   </Link>*/}
-      {loginData.length === 0 ? (
-        <div className="loading">
-          <CircularProgress color="grey" />
-        </div>
+      {!enteredName ? (
+        <h3>Please Enter a GitHub Username to see analytics.</h3>
       ) : (
         <div>
-          {/*<div className="inputBar">
+          {loginData.length === 0 ? (
+            <div className="loading">
+              <CircularProgress color="grey" />
+            </div>
+          ) : (
+            <div>
+              <Avatar
+                alt="Remy Sharp"
+                src={avatarURL}
+                sx={{ width: 120, height: 120 }}
+              />
+              {/*<div className="inputBar">
             <form onSubmit={pickUser}>
               <InputLabel htmlFor="my-input">Enter a Username</InputLabel>
               <Input
@@ -219,33 +210,38 @@ function Dashboard() {
               </Button>
             </form>
           </div>*/}
-          <div className="changeGraph">
-            <Button variant="contained" type="submit" onClick={handleClick}>
-              Change Graph
-            </Button>
-          </div>
-          <h4 style={{ color: "charcoal" }}>
-            {" "}
-            {inputName} has {loginData.length} followers. These are the amount
-            of followers your followers have.
-          </h4>
-          {displayPie ? (
-            <div>
-              <Pie
-                data={data}
-                width={750}
-                height={750}
-                options={{ maintainAspectRatio: false, borderColor: "black" }}
-              />
-            </div>
-          ) : (
-            <div>
-              <Bar
-                options={options}
-                width={200}
-                height={50}
-                data={dataForGraph}
-              />
+              <div className="changeGraph">
+                <Button variant="contained" type="submit" onClick={handleClick}>
+                  Change Graph
+                </Button>
+              </div>
+              <h4 style={{ color: "charcoal" }}>
+                {" "}
+                {inputName} has {loginData.length} followers. These are the
+                amount of followers your followers have.
+              </h4>
+              {displayPie ? (
+                <div>
+                  <Pie
+                    data={data}
+                    width={750}
+                    height={750}
+                    options={{
+                      maintainAspectRatio: false,
+                      borderColor: "black",
+                    }}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Bar
+                    options={options}
+                    width={200}
+                    height={50}
+                    data={dataForGraph}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
