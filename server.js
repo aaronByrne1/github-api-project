@@ -43,8 +43,10 @@ app.post("/api/pickUser", (req, res) => {
 
 app.post("/api/getSubscriberData", (req, res) => {
   username = req.body.inputName;
-  getFollowersList().then((data) => res.json(data));
-  //.catch((err) => res.status(404).json(err));
+  console.log(username);
+  getFollowersList(username)
+    .then((data) => res.json(data))
+    .catch((err) => res.send({ message: "Invalid Username" }));
 });
 
 async function getLogin() {
@@ -75,14 +77,14 @@ if (octokit != null) {
 });*/
 // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
-async function getFollowersList() {
+async function getFollowersList(enteredName) {
   const avatarData = await octokit.request("GET /users/{username}", {
-    username: username,
+    username: enteredName,
   });
 
   var avatarURL = avatarData.data.avatar_url;
   const tempData = await octokit.paginate("GET /users/{username}/followers", {
-    username: username,
+    username: enteredName,
   });
   var followerAmount = tempData.length;
   var followersArray = [];

@@ -2,13 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import SearchAppBar from "./SearchAppBar";
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useLocation,
-} from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -91,6 +85,7 @@ function Dashboard() {
   const childToParent = (returnedUserInput) => {
     setInputName(returnedUserInput);
     setLoginData([]);
+    setError(false);
     getSubscribeData(returnedUserInput);
     setEnteredName(true);
   };
@@ -105,15 +100,22 @@ function Dashboard() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setFollowerData(data.followers);
-        setLoginData(data.login);
-        setAvatarURL(data.avatar);
-        console.log(data.avatar);
+        if (data.message) {
+          setError(true);
+        } else {
+          setFollowerData(data.followers);
+          setLoginData(data.login);
+          setAvatarURL(data.avatar);
+          setError(false);
+        }
       })
       .catch((err) => {
+        setError(true);
+        console.log("success");
         console.error("Invalid Login", err);
       });
   };
+  console.log(error);
 
   const dataForGraph = {
     labels: loginData,
@@ -162,31 +164,38 @@ function Dashboard() {
     console.log(avatarURL);
   }
   return (
-    <div className="dashboard">
-      <SearchAppBar
-        parentToChild={searchBarName}
-        childToParent={childToParent}
-      ></SearchAppBar>
+    <div className="background">
+      <div className="dashboard">
+        <SearchAppBar
+          parentToChild={searchBarName}
+          childToParent={childToParent}
+        ></SearchAppBar>
 
-      {/*<Link to="/" style={{ color: "black" }}>
+        {/*<Link to="/" style={{ color: "black" }}>
         Back
   </Link>*/}
-      {!enteredName ? (
-        <h3>Please Enter a GitHub Username to see analytics.</h3>
-      ) : (
-        <div>
-          {loginData.length === 0 ? (
-            <div className="loading">
-              <CircularProgress color="grey" />
-            </div>
-          ) : (
-            <div>
-              <Avatar
-                alt="Remy Sharp"
-                src={avatarURL}
-                sx={{ width: 120, height: 120 }}
-              />
-              {/*<div className="inputBar">
+        {!enteredName ? (
+          <div style={{ width: "100%", height: "100%" }}>
+            <h3>Please Enter a GitHub Username to see analytics.</h3>
+          </div>
+        ) : (
+          <div>
+            {error ? (
+              <h4>Invalid Username entered.</h4>
+            ) : (
+              <div>
+                {loginData === undefined || loginData.length === 0 ? (
+                  <div className="loading">
+                    <CircularProgress color="grey" />
+                  </div>
+                ) : (
+                  <div>
+                    <Avatar
+                      alt="Remy Sharp"
+                      src={avatarURL}
+                      sx={{ width: 120, height: 120 }}
+                    />
+                    {/*<div className="inputBar">
             <form onSubmit={pickUser}>
               <InputLabel htmlFor="my-input">Enter a Username</InputLabel>
               <Input
@@ -210,42 +219,49 @@ function Dashboard() {
               </Button>
             </form>
           </div>*/}
-              <div className="changeGraph">
-                <Button variant="contained" type="submit" onClick={handleClick}>
-                  Change Graph
-                </Button>
+                    <div className="changeGraph">
+                      <Button
+                        variant="contained"
+                        type="submit"
+                        onClick={handleClick}
+                      >
+                        Change Graph
+                      </Button>
+                    </div>
+                    <h4 style={{ color: "charcoal" }}>
+                      {" "}
+                      {inputName} has {loginData.length} followers. These are
+                      the amount of followers your followers have.
+                    </h4>
+                    {displayPie ? (
+                      <div>
+                        <Pie
+                          data={data}
+                          width={750}
+                          height={750}
+                          options={{
+                            maintainAspectRatio: false,
+                            borderColor: "black",
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <Bar
+                          options={options}
+                          width={200}
+                          height={50}
+                          data={dataForGraph}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <h4 style={{ color: "charcoal" }}>
-                {" "}
-                {inputName} has {loginData.length} followers. These are the
-                amount of followers your followers have.
-              </h4>
-              {displayPie ? (
-                <div>
-                  <Pie
-                    data={data}
-                    width={750}
-                    height={750}
-                    options={{
-                      maintainAspectRatio: false,
-                      borderColor: "black",
-                    }}
-                  />
-                </div>
-              ) : (
-                <div>
-                  <Bar
-                    options={options}
-                    width={200}
-                    height={50}
-                    data={dataForGraph}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
