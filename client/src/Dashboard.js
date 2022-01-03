@@ -16,6 +16,11 @@ import {
 import "chart.js/auto";
 import { Bar } from "react-chartjs-2";
 
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 import { Pie } from "react-chartjs-2";
 
 import Button from "@mui/material/Button";
@@ -39,18 +44,18 @@ function Dashboard() {
     }
   };
 
-  /*const pickUser = (event) => {
-    event.preventDefault();
-
-    fetch("api/pickUser", {
+  const pickUser = (returnedUserInput) => {
+    fetch("api/languagesUsed", {
       method: "POST", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ inputName: inputName }),
+      body: JSON.stringify({ inputName: returnedUserInput }),
     })
       .then((response) => response.json())
-      .then((poo) => {})
+      .then((poo) => {
+        console.log(poo);
+      })
 
       .catch((err) => {
         setError(true);
@@ -58,8 +63,7 @@ function Dashboard() {
       });
 
     console.log(inputName);
-    console.log(update);
-  };*/
+  };
 
   useEffect(() => {
     parentToChild();
@@ -87,6 +91,7 @@ function Dashboard() {
     setLoginData([]);
     setError(false);
     getSubscribeData(returnedUserInput);
+    pickUser(returnedUserInput);
     setEnteredName(true);
   };
 
@@ -195,6 +200,22 @@ function Dashboard() {
                       src={avatarURL}
                       sx={{ width: 120, height: 120 }}
                     />
+                    <FormControl sx={{ minWidth: 120 }}>
+                      <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Age"
+                        //onChange={handleChange}
+                      >
+                        <MenuItem value={"Languages Used"}>
+                          Languages Used
+                        </MenuItem>
+                        <MenuItem value={"Followers of followers"}>
+                          Followers Of followers
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                     {/*<div className="inputBar">
             <form onSubmit={pickUser}>
               <InputLabel htmlFor="my-input">Enter a Username</InputLabel>

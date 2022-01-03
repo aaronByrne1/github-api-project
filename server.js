@@ -37,8 +37,11 @@ app.post("/api/login", (req, res) => {
     .catch((err) => res.status(404).json(err)); //console.log(err)); //res.json(err));
 });
 
-app.post("/api/pickUser", (req, res) => {
+app.post("/api/languagesUsed", (req, res) => {
   username = req.body.inputName;
+  getLanguages(username)
+    .then((data) => res.json(data))
+    .catch((err) => res.send({ message: "Invalid Username" }));
 });
 
 app.post("/api/getSubscriberData", (req, res) => {
@@ -119,6 +122,38 @@ async function getFollowersJson(login) {
 
   return new Promise(function (resolve, reject) {
     resolve(returnedData);
+    reject(error);
+  });
+}
+
+async function getLanguages(enteredName) {
+  const data = await octokit.request("GET /users/{username}/repos", {
+    username: enteredName,
+  });
+  console.log(data.data.length);
+  var languages = {};
+  for (var i = 0; i < data.data.length; i++) {
+    const languageData = await octokit.request(
+      "GET /repos/{owner}/{repo}/languages",
+      {
+        owner: enteredName,
+        repo: data.data[i].name,
+      }
+    );
+
+    for (var key of Object.keys(languageData.data)) {
+      console.log(key + " -> " + languageData.data[key]);
+      if (languages[key] === undefined) {
+        languages[key] = languageData.data[key];
+      } else {
+        languages[key] += languageData.data[key];
+      }
+    }
+    console.log(languages);
+  }
+
+  return new Promise(function (resolve, reject) {
+    resolve(languages);
     reject(error);
   });
 }
