@@ -27,7 +27,6 @@ var octokit = null;
 var username = null;
 app.post("/api/login", (req, res) => {
   var token = req.body.token;
-  console.log(token);
   octokit = new Octokit({
     auth: token,
   });
@@ -46,7 +45,6 @@ app.post("/api/languagesUsed", (req, res) => {
 
 app.post("/api/getSubscriberData", (req, res) => {
   username = req.body.inputName;
-  console.log(username);
   getFollowersList(username)
     .then((data) => res.json(data))
     .catch((err) => res.send({ message: "Invalid Username" }));
@@ -70,15 +68,6 @@ async function getUserInfo() {
     reject(error);
   });
 }
-if (octokit != null) {
-  getUserInfo().then((poo) => {
-    console.log(poo);
-  });
-}
-/*getLogin().then((poo) => {
-  console.log("Hello, " + poo.data.bio);
-});*/
-// Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 
 async function getFollowersList(enteredName) {
   const avatarData = await octokit.request("GET /users/{username}", {
@@ -94,7 +83,6 @@ async function getFollowersList(enteredName) {
   var loginArray = [];
   var returnedData = {};
 
-  console.log(followerAmount);
   for (var i = 0; i < followerAmount; i++) {
     const data = await octokit.request("GET /users/{username}", {
       username: tempData[i].login,
@@ -105,7 +93,6 @@ async function getFollowersList(enteredName) {
   returnedData.login = loginArray;
   returnedData.followers = followersArray;
   returnedData.avatar = avatarURL;
-  console.log(returnedData.avatar);
   return new Promise(function (resolve, reject) {
     resolve(returnedData);
     reject(error);
@@ -130,7 +117,6 @@ async function getLanguages(enteredName) {
   const data = await octokit.request("GET /users/{username}/repos", {
     username: enteredName,
   });
-  console.log(data.data.length);
   var languages = {};
   for (var i = 0; i < data.data.length; i++) {
     const languageData = await octokit.request(
@@ -149,11 +135,18 @@ async function getLanguages(enteredName) {
         languages[key] += languageData.data[key];
       }
     }
-    console.log(languages);
   }
-
+  var labels = [];
+  var languageUsage = [];
+  var languagesReturned = {};
+  for (var key of Object.keys(languages)) {
+    labels.push(key);
+    languageUsage.push(languages[key]);
+  }
+  languagesReturned.labels = labels;
+  languagesReturned.languageUsage = languageUsage;
   return new Promise(function (resolve, reject) {
-    resolve(languages);
+    resolve(languagesReturned);
     reject(error);
   });
 }

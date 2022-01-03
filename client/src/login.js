@@ -42,18 +42,14 @@ function Login() {
       body: JSON.stringify({ token: token }),
     })
       .then((response) => response.json())
-      .then((poo) => {
-        setUsername(poo.data.login);
-        console.log(username);
+      .then((data) => {
+        setUsername(data.data.login);
         setLoggedIn(true);
       })
       .catch((err) => {
         setError(true);
         console.error("Invalid Login", err);
       });
-    //console.log(data);
-    console.log("The name you entered was:" + token);
-    console.log(error);
   };
   if (loggedIn) {
     navigate("/dashboard", { replace: true, state: username });
@@ -69,7 +65,7 @@ function Login() {
       body: JSON.stringify({ inputName: inputName }),
     })
       .then((response) => response.json())
-      .then((poo) => {})
+      .then((data) => {})
 
       .catch((err) => {
         setError(true);

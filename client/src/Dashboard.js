@@ -28,9 +28,17 @@ import { Avatar, CircularProgress } from "@mui/material";
 function Dashboard() {
   const [followerData, setFollowerData] = useState([]);
   const [loginData, setLoginData] = useState([]);
+  const [languageData, setLanguageData] = useState([]);
+  const [labelsForLanguages, setLabelsForLanguages] = useState([]);
   const [displayPie, setDisplayPie] = useState(true);
   const [avatarURL, setAvatarURL] = useState(null);
   const [error, setError] = useState(false);
+  const [languageError, setLanguageError] = useState(false);
+  const [displayLanguageData, setDisplayLanguageData] = useState(false);
+  const [labelsForGraph, setLabelsForGraph] = useState([]);
+  const [conditionalData, setConditionalData] = useState([]);
+  const [sentence, setSentence] = useState(null);
+
   const [enteredName, setEnteredName] = useState(false);
   const { state } = useLocation();
   const [searchBarName, setSearchBarName] = useState(null);
@@ -43,8 +51,19 @@ function Dashboard() {
       setDisplayPie(true);
     }
   };
+  const handleChange = () => {
+    if (displayLanguageData) {
+      setConditionalData(followerData);
+      setLabelsForGraph(loginData);
+      setDisplayLanguageData(false);
+    } else {
+      setConditionalData(languageData);
+      setLabelsForGraph(labelsForLanguages);
+      setDisplayLanguageData(true);
+    }
+  };
 
-  const pickUser = (returnedUserInput) => {
+  const getLanguageData = (returnedUserInput) => {
     fetch("api/languagesUsed", {
       method: "POST", // or 'PUT'
       headers: {
@@ -53,16 +72,20 @@ function Dashboard() {
       body: JSON.stringify({ inputName: returnedUserInput }),
     })
       .then((response) => response.json())
-      .then((poo) => {
-        console.log(poo);
+      .then((data) => {
+        if (data.message) {
+          setLanguageError(true);
+        } else {
+          setLabelsForLanguages(data.labels);
+          setLanguageData(data.languageUsage);
+          setLanguageError(false);
+        }
       })
 
       .catch((err) => {
         setError(true);
         console.error("Invalid Username", err);
       });
-
-    console.log(inputName);
   };
 
   useEffect(() => {
@@ -77,7 +100,6 @@ function Dashboard() {
       },
       title: {
         display: true,
-        text: "Number of followers",
       },
     },
   };
@@ -89,9 +111,12 @@ function Dashboard() {
   const childToParent = (returnedUserInput) => {
     setInputName(returnedUserInput);
     setLoginData([]);
+    setLabelsForLanguages([]);
+    setLanguageData([]);
     setError(false);
+    setLanguageError(false);
     getSubscribeData(returnedUserInput);
-    pickUser(returnedUserInput);
+    getLanguageData(returnedUserInput);
     setEnteredName(true);
   };
 
@@ -112,21 +137,25 @@ function Dashboard() {
           setLoginData(data.login);
           setAvatarURL(data.avatar);
           setError(false);
+          setConditionalData(data.followers);
+          setLabelsForGraph(data.login);
+          setDisplayLanguageData(false);
+          setSentence(
+            "$inputName has $loginData.length followers. These are the amount of followers his/her followers have."
+          );
         }
       })
       .catch((err) => {
         setError(true);
-        console.log("success");
         console.error("Invalid Login", err);
       });
   };
-  console.log(error);
 
   const dataForGraph = {
-    labels: loginData,
+    labels: labelsForGraph,
     datasets: [
       {
-        data: followerData,
+        data: conditionalData,
         backgroundColor: [
           "rgba(255, 99, 132, 0.2)",
           "rgba(54, 162, 235, 0.2)",
@@ -140,11 +169,10 @@ function Dashboard() {
   };
 
   const data = {
-    labels: loginData,
+    labels: labelsForGraph,
     datasets: [
       {
-        label: "# of Followers",
-        data: followerData,
+        data: conditionalData,
         backgroundColor: [
           "rgba(255, 99, 132, 0.2)",
           "rgba(54, 162, 235, 0.2)",
@@ -165,9 +193,7 @@ function Dashboard() {
       },
     ],
   };
-  if (avatarURL != null) {
-    console.log(avatarURL);
-  }
+
   return (
     <div className="background">
       <div className="dashboard">
@@ -175,18 +201,17 @@ function Dashboard() {
           parentToChild={searchBarName}
           childToParent={childToParent}
         ></SearchAppBar>
-
-        {/*<Link to="/" style={{ color: "black" }}>
-        Back
-  </Link>*/}
         {!enteredName ? (
           <div style={{ width: "100%", height: "100%" }}>
             <h3>Please Enter a GitHub Username to see analytics.</h3>
           </div>
         ) : (
           <div>
-            {error ? (
-              <h4>Invalid Username entered.</h4>
+            {error || languageError ? (
+              <h4>
+                Invalid Username entered or problem with obtaining language
+                information.
+              </h4>
             ) : (
               <div>
                 {loginData === undefined || loginData.length === 0 ? (
@@ -200,46 +225,18 @@ function Dashboard() {
                       src={avatarURL}
                       sx={{ width: 120, height: 120 }}
                     />
-                    <FormControl sx={{ minWidth: 120 }}>
-                      <InputLabel id="demo-simple-select-label">Age</InputLabel>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        label="Age"
-                        //onChange={handleChange}
-                      >
-                        <MenuItem value={"Languages Used"}>
-                          Languages Used
-                        </MenuItem>
-                        <MenuItem value={"Followers of followers"}>
-                          Followers Of followers
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                    {/*<div className="inputBar">
-            <form onSubmit={pickUser}>
-              <InputLabel htmlFor="my-input">Enter a Username</InputLabel>
-              <Input
-                id="my-input"
-                aria-describedby="my-helper-text"
-                value={inputName}
-                onInput={(event) => setInputName(event.target.value)}
-              />
-              <FormHelperText id="my-helper-text"></FormHelperText>
-              <Button
-                type="submit"
-                onClick={() => {
-                  if (!update) {
-                    setUpdate(true);
-                  } else {
-                    setUpdate(false);
-                  }
-                }}
-              >
-                Submit
-              </Button>
-            </form>
-          </div>*/}
+                    <div style={{ padding: 20 }}>
+                      <div>
+                        <Button
+                          variant="contained"
+                          type="submit"
+                          onClick={handleChange}
+                        >
+                          Change Dataset
+                        </Button>
+                      </div>
+                    </div>
+
                     <div className="changeGraph">
                       <Button
                         variant="contained"
@@ -249,17 +246,29 @@ function Dashboard() {
                         Change Graph
                       </Button>
                     </div>
-                    <h4 style={{ color: "charcoal" }}>
-                      {" "}
-                      {inputName} has {loginData.length} followers. These are
-                      the amount of followers your followers have.
-                    </h4>
+                    {!displayLanguageData ? (
+                      <h4 style={{ color: "charcoal", padding: 20 }}>
+                        {" "}
+                        {inputName} has {loginData.length} followers. These are
+                        the amount of followers his/her followers have. Click on
+                        someones name to unfilter/filter them.
+                      </h4>
+                    ) : (
+                      <h4 style={{ color: "charcoal", padding: 20 }}>
+                        {" "}
+                        {inputName} has used {labelsForLanguages.length}{" "}
+                        languages. The graphs show how much she has used each
+                        language. Click on someones name to unfilter/filter
+                        them.
+                      </h4>
+                    )}
+
                     {displayPie ? (
                       <div>
                         <Pie
                           data={data}
-                          width={750}
-                          height={750}
+                          width={500}
+                          height={500}
                           options={{
                             maintainAspectRatio: false,
                             borderColor: "black",
